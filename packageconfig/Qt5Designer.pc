@@ -1,0 +1,14 @@
+prefix=[[.Prefix]]
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+
+Name: Qt5 Designer
+Description: Qt Designer module
+Version: 5.6.0
+Libs: -F${libdir} -framework QtDesigner  
+Libs.private: -F${libdir} -framework QtWidgets -framework QtGui -framework QtCore -framework DiskArbitration -framework IOKit -framework QtXml -framework OpenGL -framework AGL  
+Cflags: -I${includedir}/QtDesigner -I${includedir}
+Requires: Qt5Core Qt5Gui Qt5Widgets Qt5Xml
+

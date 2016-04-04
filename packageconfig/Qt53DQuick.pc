@@ -1,0 +1,14 @@
+prefix=[[.Prefix]]
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+
+Name: Qt5 3DQuick
+Description: Qt 3DQuick module
+Version: 5.6.0
+Libs: -F${libdir} -framework Qt3DQuick 
+Libs.private: -F/Users/shibukawa.yoshiki/Qt/5.6/clang_64/lib -F/Users/shibukawa.yoshiki/Qt/5.6/clang_64/lib -F/Users/shibukawa.yoshiki/Qt/5.6/clang_64/lib -framework QtQuick -framework Qt3DCore -framework QtGui -framework QtQml -framework QtNetwork -framework QtCore -framework OpenGL -framework AGL  
+Cflags: -I${includedir}/Qt3DQuick -I${includedir}
+Requires: Qt5Core Qt5Gui Qt5Qml Qt5Quick Qt53DCore
+

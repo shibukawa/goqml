@@ -1,0 +1,14 @@
+prefix=[[.Prefix]]
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+
+Name: Qt5 PrintSupport
+Description: Qt PrintSupport module
+Version: 5.6.0
+Libs: -F${libdir} -framework QtPrintSupport  
+Libs.private: -F${libdir} -framework QtWidgets -framework QtGui -framework QtCore -framework DiskArbitration -framework IOKit -framework Cocoa -framework OpenGL -framework AGL  
+Cflags: -I${includedir}/QtPrintSupport -I${includedir}
+Requires: Qt5Core Qt5Gui Qt5Widgets
+

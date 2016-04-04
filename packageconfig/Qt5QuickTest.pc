@@ -1,0 +1,14 @@
+prefix=[[.Prefix]]
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+
+Name: Qt5 QuickTest
+Description: Qt QuickTest module
+Version: 5.6.0
+Libs: -F${libdir} -framework QtQuickTest  
+Libs.private: -F${libdir} -framework QtWidgets -framework QtGui -framework QtCore -framework DiskArbitration -framework IOKit -framework QtTest -framework Security -framework ApplicationServices -framework IOKit -framework QtCore -framework DiskArbitration -framework QtQuick -F${libdir} -framework QtGui -framework QtQml -framework QtNetwork -framework OpenGL -framework AGL  
+Cflags: -I${includedir}/QtQuickTest -I${includedir}
+Requires: Qt5Core Qt5Widgets
+

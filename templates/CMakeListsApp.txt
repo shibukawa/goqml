@@ -1,0 +1,142 @@
+cmake_minimum_required(VERSION 3.1.0)
+
+# project global setting
+
+project([[.TargetSmall]])
+
+set([[.TargetLarge]]_MAJOR_VERSION [[.VersionMajor]])
+set([[.TargetLarge]]_MINOR_VERSION [[.VersionMinor]])
+set([[.TargetLarge]]_PATCH_VERSION [[.VersionPatch]])
+set([[.TargetLarge]]_VERSION [[.Version]])
+
+# qtpm setting
+
+set(VENDOR_PATH ${CMAKE_CURRENT_SOURCE_DIR}/vendor)
+
+# compiler setting
+
+set(CMAKE_CXX_STANDARD 11)
+if(MSVC)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+else()
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+endif()
+
+# enable Qt
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOUIC ON)
+set(CMAKE_AUTORCC ON)
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
+if(DEFINED ENV{QTDIR})
+    set(CMAKE_PREFIX_PATH "$ENV{QTDIR}")
+endif()
+
+[[range $module := .QtModules]]find_package(Qt5[[$module]] REQUIRED)
+[[end]]# include extra settings
+
+include("${CMAKE_CURRENT_SOURCE_DIR}/CMakeExtra.txt" OPTIONAL)
+
+[[if .Tests.HasItem]]
+
+# enable tests
+
+enable_testing()
+find_package(Qt5Test REQUIRED)
+[[.ExtraTestSources.DefineList]]
+[[.Tests.DefineList]]
+[[.Tests.StartLoop]]
+  get_filename_component(execname ${file} NAME_WE)
+  add_executable(${execname} ${file} ${[[.Sources.Name]]} ${[[.ExtraTestSources.Name]]}[[if .HasQtResource]] ${QRC}[[end]])
+  add_test(NAME ${execname} COMMAND ${execname})
+  qt5_use_modules(${execname} Test[[range $module := .QtModules]] [[$module]][[end]])[[if gt (len .Requires) 0]]
+  target_link_libraries(${execname} [[.RequireLibs]])[[end]]
+[[.Tests.EndLoop]]
+[[end]][[if gt (len .Requires) 0]]
+
+# dependencies
+
+set(QTPM_IS_ROOT_PROJECT FALSE)
+[[range $dependency := .Requires]]add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/vendor/[[$dependency.PackageName]] ${CMAKE_CURRENT_BINARY_DIR}/[[$dependency.LibName]])
+include("${CMAKE_CURRENT_SOURCE_DIR}/vendor/[[$dependency.PackageName]]/CMakeExtra.txt" OPTIONAL)
+include_directories(${VENDOR_PATH}/[[$dependency.PackageName]]/src)
+[[end]][[end]]
+# build setting
+
+include_directories(src)
+[[.Sources.DefineList]][[if .Resources.HasItem]]
+[[.Resources.DefineList]][[end]]
+
+if(APPLE)
+  set(MACOSX_BUNDLE_BUNDLE_NAME [[.Target]])
+  set(MACOSX_BUNDLE_GUI_IDENTIFIER "[[.Target]]")
+  set(MACOSX_BUNDLE_ICON_FILE MacOSXAppIcon.icns)
+  set_source_files_properties(Resources/MacOSXAppIcon.icns PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")[[if .Resources.HasItem]]
+  set_source_files_properties(${[[.Resources.Name]]} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")[[end]]
+  set(MACOSX_BUNDLE_INFO_STRING "[[.Target]]-[[.Version]], Copyright [[.CopyRight]]")
+  set(MACOSX_BUNDLE_SHORT_VERSION_STRING "${[[.TargetLarge]]_MAJOR_VERSION}.${[[.TargetLarge]]_MINOR_VERSION}" )
+  set(MACOSX_BUNDLE_LONG_VERSION_STRING "${[[.TargetLarge]]_VERSION}")
+  set(MACOSX_BUNDLE_BUNDLE_VERSION "${[[.TargetLarge]]_VERSION}")
+  set(MACOSX_BUNDLE_COPYRIGHT "(C) [[.CopyRight]]")
+  add_executable([[.TargetSmall]] MACOSX_BUNDLE src/main.cpp[[if .Sources.HasItem]] ${[[.Sources.Name]]}[[end]][[if .HasQtResource]] qtresources/resource.qrc[[end]][[if .Resources.HasItem]] ${[[.Resources.Name]]}[[end]] Resources/MacOSXAppIcon.icns)
+elseif(WIN32)
+  set(winres "Resources/windows.rc")
+  if(MINGW)
+    if(NOT CMAKE_RC_COMPILER)
+      set(CMAKE_RC_COMPILER windres.exe)
+    endif()
+	set(winresobj "${CMAKE_CURRENT_BINARY_DIR}/windows.rc.obj")
+    add_custom_command(OUTPUT "${winresobj}"
+      COMMAND ${CMAKE_RC_COMPILER}
+        -D GCC_WINDRES
+        -I ${CMAKE_CURRENT_SOURCE_DIR}
+        -I ${CMAKE_CURRENT_BINARY_DIR}
+        -o ${winresobj}
+        -i ${winres})
+    set(${[[.Sources.Name]]} "${winresobj}")
+  else()
+    set(${[[.Sources.Name]]} ${winres})
+  endif()
+  add_executable([[.TargetSmall]] WIN32 src/main.cpp ${[[.Sources.Name]]}[[if .HasQtResource]] qtresources/resource.qrc[[end]])
+else()
+  add_executable([[.TargetSmall]] src/main.cpp[[if .Sources.HasItem]] ${[[.Sources.Name]]}[[end]][[if .HasQtResource]] qtresources/resource.qrc[[end]])
+endif()
+[[if gt (len .QtModules) 0]]qt5_use_modules([[.TargetSmall]][[range $module := .QtModules]] [[$module]][[end]])[[end]][[if gt (len .Requires) 0]]
+target_link_libraries([[.TargetSmall]] [[.RequireLibs]])[[end]]
+
+# installer setting
+
+if(WIN32)
+    install(TARGETS [[.TargetSmall]] ${dlls} RUNTIME DESTINATION bin COMPONENT applications)
+    file(GLOB dlls ${CMAKE_CURRENT_BINARY_DIR}/*.dll)
+    install(PROGRAMS ${dlls} DESTINATION bin COMPONENT applications)
+    install(DIRECTORY
+        ${CMAKE_CURRENT_BINARY_DIR}/iconengines
+        ${CMAKE_CURRENT_BINARY_DIR}/imageformats
+        ${CMAKE_CURRENT_BINARY_DIR}/platforms
+        ${CMAKE_CURRENT_BINARY_DIR}/translations DESTINATION bin COMPONENT applications
+        ${CMAKE_CURRENT_BINARY_DIR}/Resources)
+    set(CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS_SKIP TRUE)
+    include(InstallRequiredSystemLibraries)
+    install(PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS}
+            DESTINATION programs
+            COMPONENT applications)[[if .Resources.HasItem]]
+    install(FILES ${[[.Resources.Name]]}
+            DESTINATION Resources
+            COMPONENT applications)[[end]]
+    set(CPACK_PACKAGE_NAME "[[.Target]]")
+    set(CPACK_PACKAGE_VENDOR "[[.Organization]]")
+    set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "[[.Description]]")
+    set(CPACK_PACKAGE_VERSION_MAJOR "${[[.TargetLarge]]_MAJOR_VERSION}")
+    set(CPACK_PACKAGE_VERSION_MINOR "${[[.TargetLarge]]_MINOR_VERSION}")
+    set(CPACK_PACKAGE_VERSION_PATCH "${[[.TargetLarge]]_PATCH_VERSION}")
+    set(CPACK_PACKAGE_VERSION "${[[.TargetLarge]]_VERSION}")
+    set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.rst")
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY "installer")
+    set(CPACK_COMPONENT_APPLICATIONS_DISPLAY_NAME "applications ([[.Target]])")
+    set(CPACK_NSIS_MUI_ICON "Resources/WindowsAppIcon.ico")
+    set(CPACK_NSIS_MUI_UNIICON "Resources/WindowsAppIcon.ico")
+    set(CPACK_NSIS_MENU_LINKS "programs/[[.TargetSmall]]" "[[.Target]]")
+    include(CPack)
+endif()

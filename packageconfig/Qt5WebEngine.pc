@@ -1,0 +1,14 @@
+prefix=[[.Prefix]]
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+
+Name: Qt5 WebEngine
+Description: Qt WebEngine module
+Version: 5.6.0
+Libs: -F${libdir} -framework QtWebEngine 
+Libs.private: -F/Users/shibukawa.yoshiki/Qt/5.6/clang_64/lib -F/Users/shibukawa.yoshiki/Qt/5.6/clang_64/lib -F/Users/shibukawa.yoshiki/Qt/5.6/clang_64/lib -F/Users/shibukawa.yoshiki/Qt/5.6/clang_64/lib -F/Users/shibukawa.yoshiki/Qt/5.6/clang_64/lib -framework QtWebEngineCore -framework QtQuick -framework QtGui -framework QtQml -framework QtNetwork -framework QtWebChannel -framework QtPositioning -framework QtCore -framework QtQuick -framework QtGui -framework QtQml -framework QtNetwork -framework QtCore -framework OpenGL -framework AGL  
+Cflags: -I${includedir}/QtWebEngine -I${includedir}
+Requires: Qt5Core Qt5Gui Qt5Qml Qt5Quick Qt5WebEngineCore
+

@@ -1,0 +1,14 @@
+prefix=[[.Prefix]]
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+
+Name: Enginio
+Description: Enginio module
+Version: 1.1.2
+Libs: -F${libdir} -framework Enginio  
+Libs.private: -F${libdir} -framework QtNetwork -framework QtCore -framework DiskArbitration -framework IOKit   
+Cflags: -I${includedir}/Enginio -I${includedir}
+Requires: Qt5Core Qt5Network
+

@@ -1,0 +1,14 @@
+prefix=[[.Prefix]]
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+
+Name: Qt5 WebSockets
+Description: Qt WebSockets module
+Version: 5.6.0
+Libs: -F${libdir} -framework QtWebSockets  
+Libs.private: -F${libdir} -framework QtNetwork -framework QtCore -framework DiskArbitration -framework IOKit   
+Cflags: -I${includedir}/QtWebSockets -I${includedir}
+Requires: Qt5Core Qt5Network
+

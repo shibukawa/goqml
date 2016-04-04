@@ -1,0 +1,14 @@
+prefix=[[.Prefix]]
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+
+Name: Qt5 3DQuickInput
+Description: Qt 3DQuickInput module
+Version: 5.6.0
+Libs: -F${libdir} -framework Qt3DQuickInput 
+Libs.private: -F/Users/shibukawa.yoshiki/Qt/5.6/clang_64/lib -F/Users/shibukawa.yoshiki/Qt/5.6/clang_64/lib -F/Users/shibukawa.yoshiki/Qt/5.6/clang_64/lib -framework Qt3DInput -framework Qt3DRender -framework Qt3DQuick -framework Qt3DCore -L/Users/shibukawa.yoshiki/Qt/5.6/clang_64/lib -lQt5OpenGLExtensions -framework QtGui -framework QtCore -framework OpenGL -framework AGL -framework QtQuick -framework QtQml -framework QtNetwork -framework QtConcurrent -framework OpenGL -framework AGL  
+Cflags: -I${includedir}/Qt3DQuickInput -I${includedir}
+Requires: Qt5Core Qt5Gui Qt5Qml Qt53DCore Qt53DInput Qt53DQuick
+

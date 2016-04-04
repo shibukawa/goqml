@@ -1,0 +1,5 @@
+package goqmllib
+
+func Pack() {
+
+}

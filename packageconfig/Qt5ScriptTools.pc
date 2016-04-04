@@ -1,0 +1,14 @@
+prefix=[[.Prefix]]
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+
+Name: Qt5 ScriptTools
+Description: Qt ScriptTools module
+Version: 5.6.0
+Libs: -F${libdir} -framework QtScriptTools  
+Libs.private: -F${libdir} -framework QtCore -framework DiskArbitration -framework IOKit -framework QtWidgets -framework QtGui -framework QtCore -framework DiskArbitration -framework IOKit -framework QtScript -framework OpenGL -framework AGL  
+Cflags: -I${includedir}/QtScriptTools -I${includedir}
+Requires: Qt5Core
+

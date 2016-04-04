@@ -1,0 +1,14 @@
+prefix=[[.Prefix]]
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+
+Name: Qt5 Svg
+Description: Qt Svg module
+Version: 5.6.0
+Libs: -F${libdir} -framework QtSvg  
+Libs.private: -F${libdir} -framework QtWidgets -framework QtGui -framework QtCore -framework DiskArbitration -framework IOKit -lz -framework OpenGL -framework AGL  
+Cflags: -I${includedir}/QtSvg -I${includedir}
+Requires: Qt5Core Qt5Gui Qt5Widgets
+

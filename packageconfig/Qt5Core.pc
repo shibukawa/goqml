@@ -1,0 +1,15 @@
+prefix=[[.Prefix]]
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+host_bins=${prefix}/bin
+qt_config=minimal-config small-config medium-config large-config full-config build_all debug_and_release no-pkg-config c++11 accessibility opengl shared qpa reduce_exports getaddrinfo ipv6ifname getifaddrs png freetype harfbuzz system-zlib nis cups iconv dbus openssl rpath corewlan concurrent audio-backend debug release qt_framework
+
+Name: Qt5 Core
+Description: Qt Core module
+Version: 5.6.0
+Libs: -F${libdir} -framework QtCore
+Libs.private: -framework DiskArbitration -framework IOKit -lz -lm -framework ApplicationServices -framework CoreServices -framework CoreFoundation -framework Foundation  
+Cflags: -F${libdir} -framework QtCore -I${libdir}/QtCore.framework/Headers -I${includedir}
+

@@ -1,0 +1,14 @@
+prefix=[[.Prefix]]
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+
+Name: Qt5 Concurrent
+Description: Qt Concurrent module
+Version: [[.Version]]
+Libs: -F${libdir} -framework QtConcurrent  
+Libs.private: -F${libdir} -framework QtCore -framework DiskArbitration -framework IOKit   
+Cflags: -I${includedir}/QtConcurrent -I${includedir}
+Requires: Qt5Core
+

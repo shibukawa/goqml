@@ -1,0 +1,14 @@
+prefix=[[.Prefix]]
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+
+Name: Qt5 WebView
+Description: Qt WebView module
+Version: 5.6.0
+Libs: -F${libdir} -framework QtWebView  
+Libs.private: -F${libdir} -framework QtWebEngine -framework QtQuick -framework QtGui -framework QtCore -framework DiskArbitration -framework IOKit -framework QtQml -framework QtNetwork -framework OpenGL -framework AGL  
+Cflags: -I${includedir}/QtWebView -I${includedir}
+Requires: Qt5Core Qt5Gui Qt5WebEngine Qt5Quick Qt5Qml
+
