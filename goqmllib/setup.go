@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"strings"
 	"text/template"
+	"fmt"
 )
 
 func Setup() {
@@ -47,7 +48,7 @@ func Setup() {
 		useExtraEnv = true
 	}
 	get := Command("go", ".", "get", "gopkg.in/qml.v1")
-	genqrc := Command("go", ".", "get", "gopkg.in/qml.v1/cmd/genqrc")
+	genqrc := Command("go", ".", "get", "-ldflags", fmt.Sprintf(`-s -w -r %s`, filepath.Join(qtdir, "lib")), "gopkg.in/qml.v1/cmd/genqrc")
 	if useExtraEnv {
 		get.AddEnv("PKG_CONFIG_PATH=" + pkgconfigPath)
 		genqrc.AddEnv("PKG_CONFIG_PATH=" + pkgconfigPath)

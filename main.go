@@ -9,6 +9,7 @@ import (
 var (
 	app          = kingpin.New("goqml", "Go-QML helper")
 	buildCommand = app.Command("build", "Build application with icon")
+	initCommand  = app.Command("init", "Setup application")
 	packCommand  = app.Command("pack", "Create installer")
 	setupCommand = app.Command("setup", "Setup go-qml")
 )
@@ -20,6 +21,8 @@ func main() {
 		goqmllib.Build()
 	case packCommand.FullCommand():
 		goqmllib.Pack()
+	case initCommand.FullCommand():
+		goqmllib.Init()
 	case setupCommand.FullCommand():
 		goqmllib.Setup()
 	}

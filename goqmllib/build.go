@@ -2,22 +2,28 @@ package goqmllib
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/Kodeworks/golang-image-ico"
 	"github.com/fatih/color"
+	"github.com/shibukawa/configdir"
 	"image"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
+	"strings"
+	"text/template"
+	"github.com/k0kubun/pp"
 )
 
 func Build() {
 	os.MkdirAll("Resources", 0755)
 	os.MkdirAll("_build", 0755)
 
-	CreateIcon()
+	buildApplication()
 }
 
-func CreateIcon() {
+func createIcon(outputDir string) {
 	target := Target()
 
 	var iconImage image.Image
@@ -26,8 +32,8 @@ func CreateIcon() {
 
 	workDir := "_build"
 
-	resultPath1 := filepath.Join(resourceDir, "WindowsAppIcon.ico")
-	resultPath2 := filepath.Join(resourceDir, "MacOSXAppIcon.icns")
+	resultPath1 := filepath.Join(outputDir, "WindowsAppIcon.ico")
+	resultPath2 := filepath.Join(outputDir, "MacOSXAppIcon.icns")
 	pngPath := filepath.Join("Resources", "icon.png")
 
 	file, err := os.Open(pngPath)
@@ -52,7 +58,6 @@ func CreateIcon() {
 		}
 	} else if oldestUnixTime > 0 {
 		return
-
 	}
 	sourceFile := filepath.Join("Resources", "icon.png")
 	if iconImage == nil {
@@ -64,6 +69,7 @@ func CreateIcon() {
 			panic(err) // qtpm should be able to read fallback icon anytime
 		}
 	}
+	println("@3")
 
 	if target == "windows" {
 		icon, err := os.Create(resultPath1)
@@ -75,7 +81,7 @@ func CreateIcon() {
 		color.Magenta("Wrote: %s from %s\n", filepath.Join("Resources", "WindowsAppIcon.ico"), sourceFile)
 	} else {
 		os.MkdirAll(filepath.Join(workDir, "MacOSXAppIcon.iconset"), 0755)
-		err = SequentialRun(resourceDir).
+		err = SequentialRun(".").
 			Run("sips", "-z", "16", "16", pngPath, "--out", filepath.Join(workDir, "MacOSXAppIcon.iconset", "icon_16x16.png")).
 			Run("sips", "-z", "32", "32", pngPath, "--out", filepath.Join(workDir, "MacOSXAppIcon.iconset", "icon_16x16@2x.png")).
 			Run("sips", "-z", "32", "32", pngPath, "--out", filepath.Join(workDir, "MacOSXAppIcon.iconset", "icon_32x32.png")).
@@ -91,5 +97,68 @@ func CreateIcon() {
 			panic(err)
 		}
 		color.Magenta("Wrote: %s from %s\n", filepath.Join("Resources", "MacOSXAppIcon.icns"), sourceFile)
+	}
+}
+
+func buildApplication() {
+	qtdir := FindQt()
+
+	if qtdir == "" {
+		color.Red("\nCan't find Qt. if you don't use standard install location, set QTDIR environment variable.\n")
+		os.Exit(1)
+	}
+
+	if runtime.GOOS == "darwin" && strings.HasSuffix(qtdir, "clang_64") {
+		config, _ := LoadConfig()
+
+		variable := map[string]string{
+			"Target":       config.Name,
+			"TargetSmall":  strings.ToLower(config.Name),
+			"Version":      fmt.Sprintf("%d.%d.%d", config.Version[0], config.Version[1], config.Version[2]),
+			"ShortVersion": fmt.Sprintf("%d.%d", config.Version[0], config.Version[1]),
+			"Copyright":    config.Copyright(),
+		}
+		var buffer bytes.Buffer
+		src := MustAsset("templates/Info.plist")
+		tmp := template.Must(template.New("Info.plist").Delims("[[", "]]").Parse(string(src)))
+		err := tmp.Execute(&buffer, variable)
+		if err != nil {
+			panic(err)
+		}
+
+		binDir := fmt.Sprintf("%s.app/Contents/MacOS", config.Name)
+		os.MkdirAll(binDir, 0755)
+
+		// Write Info.plist
+		ioutil.WriteFile(fmt.Sprintf("%s.app/Contents/Info.plist", config.Name), buffer.Bytes(), 0644)
+
+		// Write Icon.
+		rscDir := fmt.Sprintf("%s.app/Contents/Resources", config.Name)
+		os.MkdirAll(rscDir, 0755)
+		createIcon(rscDir)
+
+		// Write executable file
+		cmd := Command("go", ".", "generate")
+		err = cmd.Run()
+		if err != nil {
+			color.Red(err.Error())
+			os.Exit(1)
+		}
+
+		binPath := filepath.Join(binDir, strings.ToLower(config.Name))
+		buffer.Reset()
+		for _, framework := range config.AdditionalFrameworks {
+			fmt.Fprintf(&buffer, " -framework %s", framework)
+		}
+		cmd = Command("go", ".", "build", "-ldflags", fmt.Sprintf(`-s -w -r %s%s`, filepath.Join(qtdir, "lib"), buffer.String()), "-o", binPath)
+		cache := configdir.New("", "goqml").QueryCacheFolder()
+		pp.Println(cmd.command.Args)
+		pkgconfigPath := filepath.Join(cache.Path, "pkgconfig")
+		cmd.AddEnv("PKG_CONFIG_PATH=" + pkgconfigPath)
+		err = cmd.Run()
+		if err != nil {
+			color.Red(err.Error())
+			os.Exit(1)
+		}
 	}
 }
